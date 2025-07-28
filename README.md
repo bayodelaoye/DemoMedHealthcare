@@ -45,7 +45,7 @@ cd ksense-assessment
 ### 2. Install Dependencies
 
 ```bash
-npm install
+npm install node-fetch@2
 ```
 
 ### 3. Run the Script
