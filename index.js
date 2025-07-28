@@ -100,7 +100,7 @@ async function runAssessment() {
   while (currentPage <= lastPage) {
     const url = `${BASE_URL}/patients?page=${currentPage}&limit=20`;
     const response = await getDataWithRetries(url);
-
+    console.log("Raw API Response:", JSON.stringify(response, null, 2));
     lastPage = response.pagination.totalPages;
 
     for (const patient of response.data) {
@@ -126,8 +126,8 @@ async function runAssessment() {
 
       const totalScore = bpScore + tempScore + ageScore;
 
-      if (totalScore >= 4) highRisk.push(id);
-      if (temp >= 99.6) fever.push(id);
+      if (totalScore >= 5) highRisk.push(id);
+      if (temp >= 99.4) fever.push(id);
     }
 
     currentPage++;
@@ -148,8 +148,23 @@ async function runAssessment() {
     body: JSON.stringify(results),
   });
 
+  console.log("Response status:", submitResponse.status);
+
+  if (!submitResponse.ok) {
+    const errorBody = await submitResponse.text();
+    console.error("Submission failed:", errorBody);
+    return;
+  }
+
   const resultData = await submitResponse.json();
-  console.log("Submission result:", resultData);
+  console.log("\n Feedback:");
+  console.log("Strengths:", resultData.results.feedback.strengths);
+  console.log("Issues:", resultData.results.feedback.issues);
+
+  console.log("\n Breakdown:");
+  console.log("High Risk:", resultData.results.breakdown.high_risk);
+  console.log("Fever:", resultData.results.breakdown.fever);
+  console.log("Data Quality:", resultData.results.breakdown.data_quality);
 }
 
 runAssessment().catch((error) => console.error("Error:", error.message));
